@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Selection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+    }
+    select {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+    }
+    .container {
+      width: 50%;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Select Your Service</h2>
+
+    <!-- Dropdown for selecting Service Category -->
+    <label for="service-category">Select Service Category:</label>
+    <select id="service-category">
+      <option value="">Select a Category</option>
+    </select>
+
+    <!-- Dropdown for selecting Sub-Service -->
+    <label for="sub-service">Select Sub-Service:</label>
+    <select id="sub-service">
+      <option value="">Select a Sub-Service</option>
+    </select>
+
+    <!-- Dropdown for selecting Specific Service -->
+    <label for="specific-service">Select Specific Service:</label>
+    <select id="specific-service">
+      <option value="">Select a Specific Service</option>
+    </select>
+  </div>
+
+  <script>
+    // Base URL for API
+    const apiBaseUrl = 'http://127.0.0.1:8000/api/v1/users';
+
+    // Function to fetch Service Categories and populate the first dropdown
+    function fetchServiceCategories() {
+      fetch(`${apiBaseUrl}/service-categories/`)
+        .then(response => response.json())
+        .then(data => {
+          const serviceCategorySelect = document.getElementById('service-category');
+          data.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            serviceCategorySelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Error fetching service categories:', error));
+    }
+
+ // Function to fetch Sub-Services based on selected Service Category
+function fetchSubServices(categoryId) {
+  fetch(`${apiBaseUrl}/service-category/${categoryId}/sub-services/`)  // Corrected URL
+    .then(response => response.json())
+    .then(data => {
+      const subServiceSelect = document.getElementById('sub-service');
+      subServiceSelect.innerHTML = '';  // Clear previous options
+      subServiceSelect.disabled = false; // Enable the sub-service dropdown
+
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = 'Select a Sub-Service';
+      subServiceSelect.appendChild(defaultOption);
+
+      data.forEach(subService => {
+        const option = document.createElement('option');
+        option.value = subService.id;
+        option.textContent = subService.name;
+        subServiceSelect.appendChild(option);
+      });
+    })
+    .catch(error => console.error('Error fetching sub-services:', error));
+}
+
+// Function to fetch Specific Services based on selected Sub-Service
+function fetchSpecificServices(subServiceId) {
+  fetch(`${apiBaseUrl}/sub-service/${subServiceId}/specific-services/`)  // Corrected URL
+    .then(response => response.json())
+    .then(data => {
+      const specificServiceSelect = document.getElementById('specific-service');
+      specificServiceSelect.innerHTML = '';  // Clear previous options
+      specificServiceSelect.disabled = false; // Enable the specific service dropdown
+
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = 'Select a Specific Service';
+      specificServiceSelect.appendChild(defaultOption);
+
+      data.forEach(specificService => {
+        const option = document.createElement('option');
+        option.value = specificService.id;
+        option.textContent = specificService.name;
+        specificServiceSelect.appendChild(option);
+      });
+    })
+    .catch(error => console.error('Error fetching specific services:', error));
+}
+
+    // Event listener for the Service Category dropdown change
+    document.getElementById('service-category').addEventListener('change', (event) => {
+      const categoryId = event.target.value;
+      if (categoryId) {
+        fetchSubServices(categoryId);
+      } else {
+        document.getElementById('sub-service').innerHTML = '<option value="">Select a Sub-Service</option>';
+        document.getElementById('specific-service').innerHTML = '<option value="">Select a Specific Service</option>';
+        document.getElementById('sub-service').disabled = true;
+        document.getElementById('specific-service').disabled = true;
+      }
+    });
+
+    // Event listener for the Sub-Service dropdown change
+    document.getElementById('sub-service').addEventListener('change', (event) => {
+      const subServiceId = event.target.value;
+      if (subServiceId) {
+        fetchSpecificServices(subServiceId);
+      } else {
+        document.getElementById('specific-service').innerHTML = '<option value="">Select a Specific Service</option>';
+        document.getElementById('specific-service').disabled = true;
+      }
+    });
+
+    // Initialize the page by fetching Service Categories
+    fetchServiceCategories();
+  </script>
+</body>
+</html>
